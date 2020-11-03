@@ -36,29 +36,35 @@ def FetchTime(data):
     #Start sync clock
     SyncClock(time)
     
+def FetchChoice(number):
+    choice = ''
+    match2 = re.search(r'\d', number)
+    if match2:
+        choice = match2.group()
+    else:
+        print('Cannot find choice')
+    
+    if choice == '1':
+        #Manual input
+        print('Sync Clock (Manual input to AWS Field Unit Clock)')
+        #input
+        print('Enter current time (YYMMDDhhmmss): ')
+        time_string = input()
+        print('YYMMDDhhmmss: ', time_string)
+        FetchTime(time_string)
+    elif choice == '2':
+        #Server Clock input
+        print('Sync Clock (From Server Clock to AWS Field Unit Clock)')
+        now = datetime.now()
+        time_string = now.strftime("%y%m%d%H%M%S")
+        print('YYMMDDhhmmss: ', time_string)
+        FetchTime(time_string)
+    else:
+        print('Wrong input!')
+        exit()
+    
 #Main Function
 #Choose between using (1) Manual Input / (2) Server Clock
-print('Choose between using (1) Manual Input and (2) Server Clock (Type 1 or 2), or default')
-choice = input()
-
-if choice == '1':
-    #Manual input
-    print('Sync Clock (Manual input to AWS Field Unit Clock)')
-    #input
-    print('Enter current time (YYMMDDhhmmss): ')
-    time_string = input()
-    print('YYMMDDhhmmss: ', time_string)
-    FetchTime(time_string)
-elif choice == '2':
-    #Server Clock input
-    print('Sync Clock (From Server Clock to AWS Field Unit Clock)')
-    now = datetime.now()
-    time_string = now.strftime("%y%m%d%H%M%S")
-    print('YYMMDDhhmmss: ', time_string)
-    FetchTime(time_string)
-else:
-    print('#Default - Sync Clock (From Server Clock to AWS Field Unit Clock)')
-    now = datetime.now()
-    time_string = now.strftime("%y%m%d%H%M%S")
-    print('YYMMDDhhmmss: ', time_string)
-    FetchTime(time_string)
+print('Choose between using (1) Manual Input and (2) Server Clock (Type 1 or 2)')
+number = input()
+FetchChoice(number)

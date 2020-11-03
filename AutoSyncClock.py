@@ -1,7 +1,6 @@
 import serial
 import time
 from datetime import date, datetime
-import re
 
 #Defining the port parameters
 port = serial.Serial("/dev/ttyUSB0", baudrate=2400, timeout=1)
@@ -31,8 +30,9 @@ def SyncClock(time_string):
 def RegularSyncClock(time_string):
     while start == True:
         now = datetime.now()
+        matches = ['2345', '0245', '0545', '0845', '1145', '1445', '1745']
         time_string = now.strftime("%y%m%d%H%M%S")
-        if now.strftime("%H%M") == '2359' or now.strftime("%H%M") == '0600' or now.strftime("%H%M") == '1200' or now.strftime("%H%M") == '1800':
+        if now.strftime("%H%M") in matches:
             print('YYMMDDhhmmss: ', time_string)
             #Write Command
             port.write(bytearray(get_string))

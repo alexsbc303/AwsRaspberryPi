@@ -1,11 +1,8 @@
 import configparser
 import serial
-import time
 import re
-import shutil
-import os
 from pathlib import Path
-from datetime import date, datetime, timedelta
+from datetime import datetime
 
 #Defining the port parameters
 port = serial.Serial("/dev/ttyUSB0", baudrate=2400, timeout=1)
@@ -70,22 +67,19 @@ def CreateDayDirectory():
 #         print(f"Directory: ", day_path)
                 
 def ReadData(start):
-    while start == True:
-        #Write Command
+    count = 0
+    while count < 2:
         port.write(bytearray(get_DD))
-        #Read the port information
         read_port_DD = port.readline()
-        #Print code per minute
+        #Print read code
         print('DD: ', read_port_DD)
         #Fetch necessary information from data
         FetchInfo(str(read_port_DD))
-        #Housekeeping when 0830
-        Housekeeping()
-        print('--------------------')
-        time.sleep(60)
-        
+        print('--------------------')            
+        count += 1
     port.close()
-   
+    print('Finished')
+        
 def FetchInfo(data):
     station = ''
     timestamp = ''
@@ -93,9 +87,8 @@ def FetchInfo(data):
     reset = ''
     
     #Get 1 BackLog data
-    time.sleep(1)
     port.write(bytearray(get_BH))
-    read_port_BH = port.readline() 
+    read_port_BH = port.readline()
     #Print read code
     print('BH: ', read_port_BH)
     #Fetch whole string from BH
@@ -123,7 +116,7 @@ def FetchInfo(data):
         reset = resetmsg_match.group() + 'A'
     else:
         print('Reset Message: ')
-        
+    
     CreateFile(station, timestamp, info, reset, read_port_BH)
     
 def CreateFile(s, t, i, r, bh):
@@ -139,21 +132,6 @@ def CreateFile(s, t, i, r, bh):
     with file_path.open('w') as f:
         f.write(f'{s}{t}\n{i}{r}\n{bh}')
         
-def Housekeeping():
-    now = datetime.now()
-    yesterday = now - timedelta(days=1)
-    source_path = Path.cwd() / 'Aws' / station_name
-    destination_path = source_path / month / f'{station_name}_{yesterday.strftime("%y%m%d")}'
-    files = os.listdir(source_path)
-    if (now.strftime("%H%M") == '0830'):
-        for filename in files:
-            if yesterday.strftime("%y%m%d") in filename:
-                if filename.endswith('.txt'):
-                    shutil.move(f"{source_path}/{filename}", destination_path)
-        print('*****')
-        print('Housekeeping successful!')
-        print('*****')
-
 #Main Function
 #Current directory: /home/pi/Desktop/data
 print('Station Name: ', station_name)
