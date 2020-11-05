@@ -16,16 +16,13 @@ config = configparser.ConfigParser()
 config.read('/boot/config.txt')
 station_name = config.get('aws', 'name')
 
-#String Command
-get_DD = [27, 68, 68, 13]
-get_BH = [27, 66, 72, 13]
 #Timestamp variable
 now = datetime.now()
 month = now.strftime("%b")
 #Pathways
 current_path = Path('/home/pi/data/')
 #Change Aws_choice to go to different directories
-Aws_choice = 'Aws'
+Aws_choice = 'Aws_non_polling'
 Aws_path = ''
 station_path = ''
 day_path = ''
@@ -65,33 +62,16 @@ def CreateDayDirectory():
                 
 def ReadData(start):
     while start == True:
-        now = datetime.now()
-        if now.strftime("%S") == '05':
-            print('Current Time: ', now.strftime("%y%m%d%H%M%S"))
-            #Get existing data
-            port.write(get_DD)
-            read_port_DD = port.read(300).decode('utf-8')
-            #Print read code
-            print('DD: ', read_port_DD)
-            
-            #Get BackLog data
-            port.write(get_BH)
-            read_port_BH = port.read(300).decode('utf-8')
-            #Print read code
-            print('BH: ', read_port_BH)
-            print('--------------------')
-            
-            #Create File
-            CreateFile(read_port_DD, read_port_BH)
-            
-            #Housekeeping when 0830
-            Housekeeping()
-            
-            print('--------------------')
-#             time.sleep(60)
+        #Get existing data
+        read_port = port.read(300).decode('utf-8')
+        #Create File
+        if read_port != '':
+            CreateFile(read_port)
+        #Housekeeping when 0830
+        Housekeeping()       
     port.close()
     
-def CreateFile(data1, data2):
+def CreateFile(data1):
     #Filename - Station + YYMMDDHHMM
     CreateAwsDirectory()
     CreateStationDirectory()
@@ -102,7 +82,8 @@ def CreateFile(data1, data2):
     file_path = current_path / f'{station_name}{now.strftime("%y%m%d%H%M")}.txt'
     print(f"Directory: ", file_path)
     with file_path.open('a+') as f:
-        f.write(f'{data1}{data2}')
+        f.write(f'{data1}')
+    print('--------------------')
         
 def Housekeeping():
     now = datetime.now()

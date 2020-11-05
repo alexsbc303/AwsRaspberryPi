@@ -1,11 +1,9 @@
 import configparser
 import serial
-import time
 import re
-import shutil
-import os
+import time
 from pathlib import Path
-from datetime import date, datetime, timedelta
+from datetime import datetime
 
 #Defining the port parameters
 port = serial.Serial("/dev/ttyUSB0", baudrate=2400, timeout=1)
@@ -18,14 +16,13 @@ station_name = config.get('aws', 'name')
 
 #String Command
 get_DD = [27, 68, 68, 13]
-get_BH = [27, 66, 72, 13]
 #Timestamp variable
 now = datetime.now()
 month = now.strftime("%b")
 #Pathways
 current_path = Path('/home/pi/data/')
 #Change Aws_choice to go to different directories
-Aws_choice = 'Aws'
+Aws_choice = 'Aws_manual_data'
 Aws_path = ''
 station_path = ''
 day_path = ''
@@ -64,61 +61,33 @@ def CreateDayDirectory():
         day_path = current_path / Aws_choice / station_name / month / f'{station_name}_{now.strftime("%y%m%d")}'
                 
 def ReadData(start):
-    while start == True:
-        now = datetime.now()
-        if now.strftime("%S") == '05':
-            print('Current Time: ', now.strftime("%y%m%d%H%M%S"))
-            #Get existing data
-            port.write(get_DD)
-            read_port_DD = port.read(300).decode('utf-8')
-            #Print read code
-            print('DD: ', read_port_DD)
-            
-            #Get BackLog data
-            port.write(get_BH)
-            read_port_BH = port.read(300).decode('utf-8')
-            #Print read code
-            print('BH: ', read_port_BH)
-            print('--------------------')
-            
-            #Create File
-            CreateFile(read_port_DD, read_port_BH)
-            
-            #Housekeeping when 0830
-            Housekeeping()
-            
-            print('--------------------')
-#             time.sleep(60)
+    count = 0
+    while count < 1:
+        #Get existing data
+        port.write(get_DD)
+        read_port_DD = port.read(300).decode('utf-8')
+        #Print read code
+        print('DD: ', read_port_DD)       
+        count += 1
+
+        CreateFile(read_port_DD)
+        
     port.close()
+    print('Finished')
     
-def CreateFile(data1, data2):
+def CreateFile(data1):
     #Filename - Station + YYMMDDHHMM
     CreateAwsDirectory()
     CreateStationDirectory()
     CreateMonthDirectory()
     CreateDayDirectory()
     now = datetime.now()
-    current_path = Path.cwd() / Aws_choice / station_name
+    current_path = Path('/home/pi/data/') / Aws_choice / station_name
     file_path = current_path / f'{station_name}{now.strftime("%y%m%d%H%M")}.txt'
     print(f"Directory: ", file_path)
     with file_path.open('a+') as f:
-        f.write(f'{data1}{data2}')
+        f.write(f'{data1}')
         
-def Housekeeping():
-    now = datetime.now()
-    yesterday = now - timedelta(days=1)
-    source_path = Path('/home/pi/data/') / Aws_choice / station_name
-    destination_path = source_path / month / f'{station_name}_{yesterday.strftime("%y%m%d")}'
-    files = os.listdir(source_path)
-    if (now.strftime("%H%M") == '0830'):
-        for filename in files:
-            if yesterday.strftime("%y%m%d") in filename:
-                if filename.endswith('.txt'):
-                    shutil.move(f"{source_path}/{filename}", destination_path)
-        print('*****')
-        print('Housekeeping successful!')
-        print('*****')
-
 #Main Function
 #Current directory: /home/pi/Desktop/data
 print('Station Name: ', station_name)
