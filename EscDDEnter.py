@@ -20,9 +20,9 @@ get_DD = [27, 68, 68, 13]
 now = datetime.now()
 month = now.strftime("%b")
 #Pathways
-current_path = Path('/home/pi/data/')
+current_path = Path('/home/pi/DATA/')
 #Change Aws_choice to go to different directories
-Aws_choice = 'Aws_manual_data'
+Aws_choice = 'AWS_manual_data'
 Aws_path = ''
 station_path = ''
 day_path = ''
@@ -82,7 +82,7 @@ def CreateFile(data1):
     CreateMonthDirectory()
     CreateDayDirectory()
     now = datetime.now()
-    current_path = Path('/home/pi/data/') / Aws_choice / station_name
+    current_path = Path('/home/pi/DATA/') / Aws_choice / station_name
     file_path = current_path / f'{station_name}{now.strftime("%y%m%d%H%M")}.txt'
     print(f"Directory: ", file_path)
     with file_path.open('a+') as f:

@@ -23,9 +23,9 @@ get_BH = [27, 66, 72, 13]
 now = datetime.now()
 month = now.strftime("%b")
 #Pathways
-current_path = Path('/home/pi/data/')
+current_path = Path('/home/pi/DATA/')
 #Change Aws_choice to go to different directories
-Aws_choice = 'Aws'
+Aws_choice = 'AWS'
 Aws_path = ''
 station_path = ''
 day_path = ''
@@ -107,7 +107,7 @@ def CreateFile(data1, data2):
 def Housekeeping():
     now = datetime.now()
     yesterday = now - timedelta(days=1)
-    source_path = Path('/home/pi/data/') / Aws_choice / station_name
+    source_path = Path('/home/pi/DATA/') / Aws_choice / station_name
     destination_path = source_path / month / f'{station_name}_{yesterday.strftime("%y%m%d")}'
     files = os.listdir(source_path)
     if (now.strftime("%H%M") == '0830'):
